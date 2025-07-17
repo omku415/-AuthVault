@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+
+# Environment files
+.env
+config.env
+
+# Log files
+logs/
+*.log
+npm-debug.log*
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
+
+# Temporary/backup files
+*.swp
+*.swo
+*.tmp
+
+# Build output (if any)
+dist/
+build/
+
+# PM2 process files
+*.pid
+pids/
