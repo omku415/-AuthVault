@@ -13,7 +13,7 @@ export const register = catchAsyncError(async (req, res, next) => {
       return next(new ErrorHandler("All fields are required", 400));
     }
     function validatePhoneNumber(phone) {
-      const phoneRegex = /^((\+91|0)?[6-9]\d{9}|(\+1\s?)?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4})$/;
+      const phoneRegex = /^(\+91[\-\s]?|0)?[6-9]\d{9}$/;
       return phoneRegex.test(phone);
     }
     if (!validatePhoneNumber(phone)) {
@@ -126,3 +126,71 @@ function generateEmailTemplate(verificationCode) {
     </div>
   `;
 }
+
+export const verifyOTP = catchAsyncError(async (req, res, next) => {
+  const { email, otp, phone } = req.body;
+  function validatePhoneNumber(phone) {
+    const phoneRegex = /^(\+91[\-\s]?|0)?[6-9]\d{9}$/;
+    return phoneRegex.test(phone);
+  }
+  if (!validatePhoneNumber(phone)) {
+    return next(
+      new ErrorHandler("Invalid phone number according to india", 400)
+    );
+  }
+  try {
+    const userAllEntries = await User.find({
+      $or: [
+        {
+          email,
+          accountVerified: false,
+        },
+        {
+          phone,
+          accountVerified: false,
+        },
+      ],
+    }).sort({ createdAt: -1 });
+    if (userAllEntries.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    let user;
+    if (userAllEntries.length > 1) {
+      user = userAllEntries[0];
+
+      await User.deleteMany({
+        _id: { $ne: user._id },
+        $or: [
+          { phone, accountVerified: false },
+          { email, accountVerified: false },
+        ],
+      });
+    } else {
+      user = userAllEntries[0];
+    }
+    if (user.verificationCode !== Number(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid otp",
+      });
+    }
+    const currentTime = Date.now();
+    const verificationCodeExpire = new Date(
+      user.verificationCodeExpire
+    ).getTime();
+
+    if (currentTime > verificationCodeExpire) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP Expired",
+      });
+    }
+    user.accountVerified = true;
+    user.verificationCode = null;
+    user.verificationCodeExpire = null;
+    await user.save({ validateModifiedOnly: true });
+  } catch (error) {}
+});
