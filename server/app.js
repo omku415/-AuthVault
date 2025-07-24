@@ -21,6 +21,6 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => res.send("Server working"));
-app.use("/api/v1/user",userRouter);
+app.use("/api/v1/user", userRouter);
 connection();
 app.use(errorMiddleware);

@@ -3,6 +3,7 @@ import { catchAsyncError } from "../middlewares/catchAsyncError.js";
 import { User } from "../models/userModel.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import twilio from "twilio";
+import { sendToken } from "../utils/sendToken.js";
 
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
 
@@ -192,5 +193,10 @@ export const verifyOTP = catchAsyncError(async (req, res, next) => {
     user.verificationCode = null;
     user.verificationCodeExpire = null;
     await user.save({ validateModifiedOnly: true });
-  } catch (error) {}
+
+    sendToken(user, 200, "Account Verified",res);
+
+  } catch (error) {
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
 });
