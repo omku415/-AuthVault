@@ -194,9 +194,39 @@ export const verifyOTP = catchAsyncError(async (req, res, next) => {
     user.verificationCodeExpire = null;
     await user.save({ validateModifiedOnly: true });
 
-    sendToken(user, 200, "Account Verified",res);
-
+    sendToken(user, 200, "Account Verified", res);
   } catch (error) {
     return next(new ErrorHandler("Internal Server Error", 500));
   }
+});
+
+export const login = catchAsyncError(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return next(new ErrorHandler("Email and password are required", 400));
+  }
+  const user = await User.findOne({ email, accountVerified: true }).select(
+    "+password"
+  );
+  if (!user) {
+    return next(new ErrorHandler("User does not exist", 400));
+  }
+  const isPasswordMatch = await user.comparePassword(password);
+  if (!isPasswordMatch) {
+    return next(new ErrorHandler("Incorrect Password", 400));
+  }
+  sendToken(user, 200, "LoggedIn successfully", res);
+});
+
+export const logout = catchAsyncError(async (req, res, next) => {
+  res
+    .status(200)
+    .cookie("token", "", {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+    })
+    .json({
+      success: true,
+      message: "Logout successfully",
+    });
 });
