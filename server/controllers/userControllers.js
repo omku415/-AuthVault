@@ -231,10 +231,63 @@ export const logout = catchAsyncError(async (req, res, next) => {
     });
 });
 
-export const getUser=catchAsyncError(async(req,res,next)=>{
+export const getUser = catchAsyncError(async (req, res, next) => {
   const user = req.user;
   res.status(200).json({
-    success:true,
-    user
-  })
-})
+    success: true,
+    user,
+  });
+});
+
+export const forgotPassword = catchAsyncError(async (req, res, next) => {
+  const user = await User.findOne({
+    email: req.body.email,
+    accountVerified: true,
+  });
+  if (!user) {
+    return next(new ErrorHandler("User not found", 400));
+  }
+  const resetToken = user.generatePasswordToken();
+  await user.save({ validateBeforeSave: false });
+
+  const resetPasswordUrl = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
+
+  const message = getResetPasswordHTML(resetPasswordUrl, user.name || "User");
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Reset Password",
+      message,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Email sent to ${user.email}`,
+    });
+  } catch (error) {
+    // Clean up reset fields if sending fails
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(new ErrorHandler("Couldn't send password reset email", 500));
+  }
+});
+function getResetPasswordHTML(resetUrl, username) {
+  return `
+  <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 25px; border: 1px solid #ddd; border-radius: 8px; background-color: #ffffff;">
+    <h2 style="color: #333;">Hi ${username},</h2>
+    <p style="color: #555; font-size: 15px;">
+      You requested a password reset. Click the button below to reset your password:
+    </p>
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${resetUrl}" style="background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+        Reset Password
+      </a>
+    </div>
+    <p style="color: #888; font-size: 13px;">
+      If you didn't request this, you can ignore this email.
+    </p>
+  </div>
+  `;
+}

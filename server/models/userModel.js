@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema({
   name: String,
@@ -9,7 +10,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     minLength: [8, "Password must have at least 8 characters"],
     maxLength: [32, "Password should be less than 32 characters"],
-    select:false
+    select: false,
   },
   phone: String,
   accountVerified: { type: Boolean, default: false },
@@ -55,4 +56,16 @@ userSchema.methods.generateToken = async function () {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
+
+userSchema.methods.generatePasswordToken = function () {
+  const resetToken = crypto.randomBytes(20).toString("hex");
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+  return resetToken;
+};
+
 export const User = mongoose.model("User", userSchema);
