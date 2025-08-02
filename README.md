@@ -1,30 +1,47 @@
-# 🔐 Auth System
+# 🛡️ Authentication System with OTP & JWT
 
-Auth System is a full-stack authentication platform built with React and Node.js. It provides a secure and user-friendly authentication flow using JWT, OTP verification via Twilio, and password recovery features. Designed to be scalable and secure for real-world applications.
- 
+A full-stack authentication system built with **React**, **Node.js**, **Express**, and **MongoDB** that includes OTP verification, JWT-based authentication, and password reset functionality.
 
 ---
 
 ## 🚀 Features
 
-- Register and log in securely  
-- Verify account via OTP (Phone Call or Email)  
-- Reset forgotten password via email link  
-- Token-based protected routes using JWT  
-- Smart error messages and token expiration handling
+- ✅ **JWT Authentication**  
+  Secure token-based authentication for protecting API routes.
+
+- ✅ **OTP Verification via Twilio & Email**  
+  Send One-Time Passwords for verification through:
+  - 📧 Email (using NodeMailer)
+  - 📞 Phone call (using Twilio)
+
+- ✅ **Forgot & Reset Password**  
+  Secure password reset using time-limited tokens.
+
+- ✅ **Login & Registration System**  
+  Frontend and backend integration for seamless user signup and login.
+
+- ✅ **Basic Automation**  
+  Smart backend logic to streamline the authentication and verification process.
 
 ---
 
-## 🛠️ Tech Stack
+## 🧑‍💻 Tech Stack Used
 
-- **Frontend:** React  
-- **Backend:** Node.js with Express  
-- **Database:** MongoDB  
-- **Authentication:** JWT & bcrypt  
-- **OTP Service:** Twilio  
-- **Email Service:** Nodemailer  
-- **State Management (optional):** Context API / Redux  
-- **Environment Config:** dotenv  
+- **Frontend**
+  - [React.js](https://reactjs.org/): User Interface
 
----
+- **Backend**
+  - [Node.js](https://nodejs.org/): JavaScript runtime
+  - [Express.js](https://expressjs.com/): Web framework
+
+- **Database**
+  - [MongoDB](https://www.mongodb.com/): Store user credentials and tokens
+
+- **Authentication**
+  - [JWT](https://jwt.io/): JSON Web Token for secure API access
+
+- **OTP Services**
+  - [Twilio](https://www.twilio.com/): Phone call-based OTP
+  - [NodeMailer](https://nodemailer.com/): Email-based OTP
+
 
